@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <script>
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                .then(function(stream) {
+                    document.querySelector('#camera').srcObject = stream;
+                })
+                .catch(function(error) {
+                    console.error('Error accessing the camera.', error);
+                });
+        }
+
+        function takePhoto() {
+            const video = document.querySelector('#camera');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            video.srcObject.getTracks().forEach(track => track.stop());
+            document.querySelector('#photo').value = canvas.toDataURL('image/jpeg');
+            document.querySelector('#captureForm').submit();
+        }
+    </script>
+</head>
+<body>
+    <h1>Welcome to the Home Page</h1>
+    
+    <h2>Upload a Photo</h2>
+    <a href="/upload"><button>Select a photo of your fridge</button></a>
+    <form method="post" action="/analyze" enctype="multipart/form-data">
+        <input type="file" name="image">
+        <input type="submit">
+    </form>
+
+    <h2>Take a Photo</h2>
+    <button onclick="startCamera()">Start Camera</button>
+    <video id="camera" autoplay></video>
+    <button onclick="takePhoto()">Take Photo</button>
+    <form id="captureForm" action="/analyze" method="post">
+        <input type="hidden" name="image" id="photo">
+    </form>
+
+    <footer>
+        <hr>
+    </footer>
+</body>
+</html>

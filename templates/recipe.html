@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recipes</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #333; }
+        label { margin-top: 20px; display: block; }
+        select, input, button { padding: 8px; margin-top: 5px; }
+        button { background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        #recipesList p { background-color: #f2f2f2; padding: 10px; border-radius: 5px; }
+    </style>
+    <script>
+                async function loadRecipes() {
+            try {
+                const response = await fetch('recipes.json'); // Adjust path if necessary
+                if (!response.ok) throw new Error('Failed to load recipes');
+                const jsonData = await response.json();
+
+                const recipesDiv = document.getElementById('recipesList');
+                recipesDiv.innerHTML = ''; // Clear previous content
+
+                jsonData.recipes.forEach(recipe => {
+                    const recipeContainer = document.createElement('div');
+                    recipeContainer.className = 'recipe';
+
+                    const name = document.createElement('h2');
+                    name.textContent = recipe.name;
+                    recipeContainer.appendChild(name);
+
+                    const ingredientsHeader = document.createElement('h3');
+                    ingredientsHeader.textContent = 'Ingredients';
+                    recipeContainer.appendChild(ingredientsHeader);
+
+                    const ingredientsList = document.createElement('ul');
+                    recipe.ingredients.forEach(ingredient => {
+                        const li = document.createElement('li');
+                        li.textContent = ingredient;
+                        ingredientsList.appendChild(li);
+                    });
+                    recipeContainer.appendChild(ingredientsList);
+
+                    const outstandingHeader = document.createElement('h3');
+                    outstandingHeader.textContent = 'Outstanding Ingredients';
+                    recipeContainer.appendChild(outstandingHeader);
+
+                    const outstandingList = document.createElement('ul');
+                    recipe['outstanding ingredients'].forEach(ingredient => {
+                        const li = document.createElement('li');
+                        li.textContent = ingredient;
+                        outstandingList.appendChild(li);
+                    });
+                    recipeContainer.appendChild(outstandingList);
+
+                    const instructionsHeader = document.createElement('h3');
+                    instructionsHeader.textContent = 'Instructions';
+                    recipeContainer.appendChild(instructionsHeader);
+
+                    const instructions = document.createElement('p');
+                    instructions.className = 'instructions';
+                    instructions.textContent = recipe.instruction;
+                    recipeContainer.appendChild(instructions);
+
+                    recipesDiv.appendChild(recipeContainer);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('recipesList').innerHTML = `<p>Error loading recipes: ${error.message}</p>`;
+            }
+        }
+async function fetchRecipes() {
+    const apiUrl = '/generate_recipes';
+    const cuisine = document.getElementById('cuisineSelect').value;
+    const spiciness = document.getElementById('spicinessSelect').value;
+    const allergies = document.getElementById('allergiesInput').value;
+
+    try {
+        const response = await fetch('ingredients.json');
+        if (!response.ok) throw new Error('Failed to load ingredients');
+        const jsonData = await response.json();
+
+        const ingredients = {
+            "ingredients": jsonData.fridge_contents.map(item => item.item),
+            "cuisine": cuisine,
+            "spiciness": spiciness,
+            "allergies": allergies
+        };
+
+        const recipeResponse = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(ingredients)
+        });
+        const recipeData = await recipeResponse.json();
+        const fs = require('fs');
+
+// Path to your JSON file
+const filePath = '../recipes.json';
+
+// Read the JSON file asynchronously
+fs.readFile(filePath, 'utf8', (err, data) => {
+  if (err) {
+    console.error("Error reading file:", err);
+    return;
+  }
+
+  // Parse the JSON data
+  const obj = JSON.parse(data);
+
+  // Loop through the recipes array
+  obj.recipes.forEach((recipe, index) => {
+    console.log(`Recipe ${index + 1}: ${recipe.name}`);
+    console.log('Ingredients:');
+    recipe.ingredients.forEach(ingredient => {
+      console.log(`- ${ingredient}`);
+    });
+    console.log('Outstanding Ingredients:');
+    recipe['outstanding ingredients'].forEach(ingredient => {
+      console.log(`- ${ingredient}`);
+    });
+    console.log('Instructions:');
+    console.log(recipe.instruction);
+    console.log('----------------------------------');
+  });
+});
+
+
+    } catch (error) {
+        console.error('Error:', error);
+        const fs = require('fs');
+
+// Path to your JSON file
+const filePath = '../recipes.json';
+
+// Read the JSON file asynchronously
+fs.readFile(filePath, 'utf8', (err, data) => {
+  if (err) {
+    console.error("Error reading file:", err);
+    return;
+  }
+
+  // Parse the JSON data
+  const obj = JSON.parse(data);
+
+  // Loop through the recipes array
+  obj.recipes.forEach((recipe, index) => {
+    console.log(`Recipe ${index + 1}: ${recipe.name}`);
+    console.log('Ingredients:');
+    recipe.ingredients.forEach(ingredient => {
+      console.log(`- ${ingredient}`);
+    });
+    console.log('Outstanding Ingredients:');
+    recipe['outstanding ingredients'].forEach(ingredient => {
+      console.log(`- ${ingredient}`);
+    });
+    console.log('Instructions:');
+    console.log(recipe.instruction);
+    console.log('----------------------------------');
+  });
+});
+
+        document.getElementById('recipesList').innerHTML = '<p>Error loading recipes.</p>';
+    }
+}
+
+    </script>
+</head>
+<body>
+    <h1>Ingredients List</h1>
+    {% if data.fridge_contents %}
+        <ul>
+        {% for ingredient in data.fridge_contents %}
+            <li>{{ ingredient.item }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No ingredients found or error in loading data.</p>
+    {% endif %}
+
+    <h1>Customize Your Own Recipe 
+        
+    </h1>
+    <label for="cuisineSelect">Choose a cuisine:</label>
+    <select id="cuisineSelect">
+        <option value="Afghan">Afghan</option>
+        <option value="Argentinian">Argentinian</option>
+        <option value="Austrian">Austrian</option>
+        <option value="Belgian">Belgian</option>
+        <option value="Bolivian">Bolivian</option>
+        <option value="Brazilian">Brazilian</option>
+        <option value="Bulgarian">Bulgarian</option>
+        <option value="Chilean">Chilean</option>
+        <option value="Chinese">Chinese</option>
+        <option value="Colombian">Colombian</option>
+        <option value="Costa Rican">Costa Rican</option>
+        <option value="Cuban">Cuban</option>
+        <option value="Czech">Czech</option>
+        <option value="Danish">Danish</option>
+        <option value="Dutch">Dutch</option>
+        <option value="Egyptian">Egyptian</option>
+        <option value="Ethiopian">Ethiopian</option>
+        <option value="Filipino">Filipino</option>
+        <option value="Finnish">Finnish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+        <option value="Greek">Greek</option>
+        <option value="Hungarian">Hungarian</option>
+        <option value="Icelandic">Icelandic</option>
+        <option value="Indian">Indian</option>
+        <option value="Indonesian">Indonesian</option>
+        <option value="Iranian">Iranian</option>
+        <option value="Irish">Irish</option>
+        <option value="Israeli">Israeli</option>
+        <option value="Italian">Italian</option>
+        <option value="Japanese">Japanese</option>
+        <option value="Jordanian">Jordanian</option>
+        <option value="Kazakh">Kazakh</option>
+        <option value="Korean">Korean</option>
+        <option value="Lebanese">Lebanese</option>
+        <option value="Luxembourgish">Luxembourgish</option>
+        <option value="Malaysian">Malaysian</option>
+        <option value="Mexican">Mexican</option>
+        <option value="Mongolian">Mongolian</option>
+        <option value="Moroccan">Moroccan</option>
+        <option value="Nepalese">Nepalese</option>
+        <option value="Nigerian">Nigerian</option>
+        <option value="Norwegian">Norwegian</option>
+        <option value="Pakistani">Pakistani</option>
+        <option value="Panamanian">Panamanian</option>
+        <option value="Peruvian">Peruvian</option>
+        <option value="Polish">Polish</option>
+        <option value="Portuguese">Portuguese</option>
+        <option value="Romanian">Romanian</option>
+        <option value="Russian">Russian</option>
+        <option value="Salvadoran">Salvadoran</option>
+        <option value="Scottish">Scottish</option>
+        <option value="South African">South African</option>
+        <option value="Spanish">Spanish</option>
+        <option value="Sri Lankan">Sri Lankan</option>
+        <option value="Swedish">Swedish</option>
+        <option value="Swiss">Swiss</option>
+        <option value="Thai">Thai</option>
+        <option value="Turkish">Turkish</option>
+        <option value="Ukrainian">Ukrainian</option>
+        <option value="Uruguayan">Uruguayan</option>
+        <option value="Vietnamese">Vietnamese</option>
+        <option value="Welsh">Welsh</option>
+    </select>   
+    <label for="spicinessSelect">Choose spiciness level:</label>
+<select id="spicinessSelect">
+    <option value="Spicy">Spicy</option>
+    <option value="Not Spicy">Not Spicy</option>
+</select>
+
+<label for="allergiesInput">Enter allergies (comma-separated):</label>
+<input type="text" id="allergiesInput" placeholder="e.g., nuts, gluten">
+    <button onclick="fetchRecipes()">Fetch Recipes</button>
+    <button onclick="loadRecipes()">Print Recipes</button>
+    <div id="recipesList"></div> <!-- Container for recipes -->
+    <p>Here are your personalized recipe suggestions based on the ingredients you have.</p>
+    <a href="/">Go Back Home</a>
+</body>
+</html>
